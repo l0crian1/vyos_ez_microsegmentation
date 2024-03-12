@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Network Function GUI1</title>
+    <!-- Replace the line below with the local path to Bootstrap CSS -->
+	<link href="/static/css/bootstrap.min.css" rel="stylesheet">
+	<style>
+        body {
+            padding-top: 20px;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: auto auto repeat({{ groups|length }}, 1fr);
+            grid-template-rows: repeat({{ groups|length + 1 }}, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .grid-header, .grid-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .grid-header {
+            background-color: #f0f0f0;
+            padding: 10px;
+            font-weight: bold;
+            border: 1px solid #ddd;
+        }
+        .grid-item {
+            padding: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 5px;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        .config-output {
+			background-color: #f9f9f9;
+			border: 1px solid #ddd;
+			border-radius: 5px;
+			padding: 10px;
+			font-family: 'Courier New', monospace;
+			white-space: pre-line; /* Collapses consecutive whitespace and wraps text, preserves line breaks */
+			overflow-x: auto; /* Add horizontal scrolling if needed */
+			line-height: .1; /* set line height to normal to reduce space between lines */
+		}
+
+		/* Adjustments to remove extra space between lines */
+		.config-output span {
+			display: block; /* make span behave like a block element */
+			margin: 0; /* remove any default margin */
+			padding: 0; /* remove any default padding */
+			line-height: normal; /* set line height to normal to reduce space between lines */
+		}
+	/* Dark mode styles */
+		.dark-mode {
+			background-color: #343a40;
+			color: #ffffff;
+		}
+		.dark-mode .grid-header {
+			background-color: #495057;
+			color: #ffffff;
+		}
+		.dark-mode .grid-header:not(:empty) {
+			background-color: #495057;
+			color: #ffffff;
+		}
+		.dark-mode .grid-header:empty {
+			background-color: #343a40; /* Match this with the dark-mode background color */
+			border: none; /* If you want to remove the border in dark mode */
+		}
+		.dark-mode .config-output {
+			background-color: #23272b;
+			color: #ffffff;
+		}
+		.dark-mode .btn-outline-secondary {
+			border-color: #ffffff;
+			color: #ffffff;
+		}
+		.dark-mode .btn-info {
+			background-color: #17a2b8;
+		}
+		.dark-mode .btn-success {
+			background-color: #28a745;
+		}
+		.dark-mode .btn-primary {
+			background-color: #007bff;
+		}
+		.grid-header:not(:empty) {
+			background-color: #f0f0f0;
+			padding: 10px;
+			font-weight: bold;
+			border: 1px solid #ddd;
+		}
+			
+		/* Style for empty headers (optional, if you want to keep the borders) */
+		.grid-header:empty {
+			background-color: transparent;
+			border: none;
+		}	
+	</style>
+</head>
+<body>
+	<!-- Toggle Dark Mode Button -->
+	<div class="dark-mode-toggle">
+		<button id="darkModeToggle" class="btn btn-secondary">Toggle Dark Mode</button>
+	</div>
+
+	<div class="container">
+        <div class="grid-container">
+            <div class="grid-header">
+                <button id="updateVrfListBtn" class="btn btn-info">Update VRF List</button>
+            </div>
+            <div class="grid-header"></div> <!-- Placeholder for alignment -->
+            {% for group in groups %}
+                <div class="grid-header">{{ group }}</div>
+            {% endfor %}
+            {% for row in groups %}
+                <div class="grid-header">{{ row }}</div>
+                <div class="grid-header"></div> <!-- Placeholder for alignment in each row -->
+                {% for col in groups %}
+                    {% set button_state = states.get(row ~ '-' ~ col, 'Off') %}
+                    <div class="grid-item">
+                        <button onclick="toggleState(this, '{{ row }}', '{{ col }}')" class="btn {{ 'btn-success' if button_state == 'On' else 'btn-outline-secondary' }}">
+                            {{ button_state }}
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        <div>
+            <h2>Generated Configurations</h2>
+            <div class="config-output">
+				{% for config in configs %}
+					<span>{{ config }}</span>
+				{% endfor %}
+			</div>
+
+            <button id="pushConfigBtn" class="btn btn-primary mt-3">Push Config to VyOS</button>
+        </div>
+    </div>
+
+
+
+	<script>
+		document.getElementById('updateVrfListBtn').addEventListener('click', function() {
+			fetch('/update_vrf_list')
+				.then(response => response.json())
+				.then(data => {
+					console.log(data); // Log the server's response
+					alert(data.message); // Optionally, alert the user of success
+					location.reload(); // Reload the page to reflect the updated VRF list
+				})
+				.catch(error => {
+					console.error('Error:', error);
+				});
+		});
+		
+		function toggleState(btn, group1, group2) {
+			const currentState = btn.innerText;
+			const nextState = currentState === "Off" ? "On" : "Off";
+			btn.innerText = nextState;
+
+			// Update button color
+			btn.style.backgroundColor = nextState === "On" ? "green" : "";
+
+			// Send the state to the server
+			const url = `/set_state?group1=${encodeURIComponent(group1)}&group2=${encodeURIComponent(group2)}&state=${encodeURIComponent(btn.innerText)}`;
+			fetch(url)
+				.then(response => response.json())
+				.then(data => {
+					console.log(data); // Log the server response
+					
+					// Update button color based on the response from the server
+					if (data.state === "On") {
+						btn.classList.remove('btn-outline-secondary');
+						btn.classList.add('btn-success');
+						btn.innerText = "On";
+					} else {
+						btn.classList.remove('btn-success');
+						btn.classList.add('btn-outline-secondary');
+						btn.innerText = "Off";
+					}
+
+					// Fetch and update the configurations
+					fetchConfigs();
+				})
+				.catch(error => {
+					console.error('Error:', error);
+				});
+		}
+
+		function fetchConfigs() {
+			fetch('/get_configs')
+				.then(response => response.json())
+				.then(data => {
+					const configOutput = document.querySelector('.config-output');
+					// Clear existing configs
+					configOutput.innerHTML = '';
+					// Append new configs
+					data.configs.forEach(config => {
+						const configLine = document.createElement('span');
+						configLine.textContent = config;
+						configOutput.appendChild(configLine);
+					});
+				})
+				.catch(error => {
+					console.error('Error:', error);
+				});
+		}
+		
+		document.getElementById('pushConfigBtn').addEventListener('click', function() {
+			pushConfigToVyOS();
+		});
+		document.addEventListener('DOMContentLoaded', fetchConfigs);
+
+		function pushConfigToVyOS() {
+			// Make the request to your Flask route that handles the push
+			fetch('/push_config_to_vyos', {
+				method: 'POST', // Assuming you're sending a POST request
+				// You may need to send necessary data or set headers based on your implementation
+			})
+			.then(response => response.json())
+			.then(data => {
+				console.log(data); // Log the response
+				alert(data.message); // Optionally alert the user
+			})
+			.catch(error => {
+				console.error('Error:', error);
+			});
+		}
+		document.getElementById('darkModeToggle').addEventListener('click', function() {
+			document.body.classList.toggle('dark-mode');
+		});		
+	</script>
+</body>
+</html>
