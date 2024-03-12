@@ -47,7 +47,7 @@ def push_config_to_vyos():
     # This could involve SSH commands, API calls, etc., depending on your setup
     # File path where the Python script will be saved
     configs = generate_configs()
-    configCommand = "sg vyattacfg -c ./config.sh"
+    configCommand = "sg vyattacfg -c ./config_scripts/config.sh"
     file_path = '/config/scripts/tempConfigFile.py'
 
     # Write the configuration commands to a file
