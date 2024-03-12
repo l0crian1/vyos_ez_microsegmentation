@@ -5,6 +5,9 @@ import json
 import os
 import subprocess
 
+config_sh_path = './config_scripts/config.sh'
+os.chmod(config_sh_path, 0o755)
+
 states_file_path = 'button_states.json'
 
 app = Flask(__name__)
