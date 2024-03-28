@@ -10,7 +10,7 @@ To install this on VyOS:
 7. Enable the VyOS API using 'set service https api keys id key key 'key''. The value for 'key' at the end should be whatever you want your API key to be. You may wish to further secure this using this page: https://docs.vyos.io/en/latest/configuration/service/https.html
 8. Find and update the 'apiKey = 'key'' string in 'def updateVRF_list():' to whatever you made your key.
 9. Run the script using 'python3 ez_microsegmentation.py'
-10. Access the GUI on http://<IP>:5001
+10. Access the GUI on http://\<IP\>:5001
 
 By default, the script will be listening on all interfaces. You can modify that if desired.
 
