@@ -245,24 +245,36 @@
                                 });
                 }
 
-                function fetchConfigs() {
-                        fetch('/get_configs')
-                                .then(response => response.json())
-                                .then(data => {
-                                        const configOutput = document.querySelector('.config-output');
-                                        // Clear existing configs
-                                        configOutput.innerHTML = '';
-                                        // Append new configs
-                                        data.configs.forEach(config => {
-                                                const configLine = document.createElement('span');
-                                                configLine.textContent = config;
-                                                configOutput.appendChild(configLine);
-                                        });
-                                })
-                                .catch(error => {
-                                        console.error('Error:', error);
-                                });
-                }
+		function fetchConfigs() {
+			fetch('/get_configs')
+				.then(response => {
+					if (!response.ok) { // Checks if the response status code indicates an error
+						return response.json().then(error => Promise.reject(error));
+					}
+					return response.json();
+				})
+				.then(data => {
+					const configOutput = document.querySelector('.config-output');
+					// Clear existing configs
+					configOutput.innerHTML = '';
+					// Append new configs
+					data.configs.forEach(config => {
+						const configLine = document.createElement('span');
+						configLine.textContent = config;
+						configOutput.appendChild(configLine);
+					});
+				})
+				.catch(error => {
+					if (error.error) {
+						// This is where you show the error as a popup if present
+						alert(error.error);
+					} else {
+						// General error handling
+						console.error('Error fetching configs:', error);
+						alert('Failed to fetch configurations.');
+					}
+				});
+		}
 
                 document.getElementById('pushConfigBtn').addEventListener('click', function() {
                         pushConfigToVyOS();
@@ -284,6 +296,7 @@
                                 console.error('Error:', error);
                         });
                 }
+		
                 document.getElementById('darkModeToggle').addEventListener('click', function() {
                         document.body.classList.toggle('dark-mode');
                 });
