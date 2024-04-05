@@ -30,10 +30,7 @@ def set_state():
     group1 = request.args.get('group1')
     group2 = request.args.get('group2')
     state = request.args.get('state')
-##    if state == 'On':
-##        turn_on(group1, group2)
-##    else:
-##        turn_off(group1, group2)
+    
     save_state(group1, group2, state)
     #generate_route_target_config()  # Generate config after state change
     return jsonify({'status': 'success', 'group1': group1, 'group2': group2, 'state': state})
@@ -93,18 +90,6 @@ def load_states():
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
-##def turn_on(group1, group2):
-##    # Implement the logic for turning on the connection here
-##    print(f"Connection ON between {group1} and {group2}")
-##    #updateVRF_list()
-##    # Here you would add the actual code to handle the ON state
-##
-##def turn_off(group1, group2):
-##    # Implement the logic for turning off the connection here
-##    print(f"Connection OFF between {group1} and {group2}")
-##    #updateVRF_list()
-##    # Here you would add the actual code to handle the OFF state
-
 def updateVRF_list():
     global vpn_info, groups
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -123,31 +108,15 @@ def updateVRF_list():
     for i in vpn_info:
         groups.append(i[0])
 
-##def generate_route_target_config():
-##    # Load button states
-##    states = load_states()
-##    # Convert vpn_info to dictionary for easy access
-##    rt_dict = {vrf: rt for vrf, rt in vpn_info}
-##    # Prepare a dictionary for VRF import configurations
-##    vrf_imports = {vrf: set() for vrf, rt in vpn_info}
-##    # Determine the route-target imports based on "On" states
-##    for pairing, state in states.items():
-##        if state == 'On':
-##            vrf1, vrf2 = pairing.split('-')
-##            if vrf1 in rt_dict and vrf2 in rt_dict:
-##                vrf_imports[vrf1].add(rt_dict[vrf2])
-##                vrf_imports[vrf2].add(rt_dict[vrf1])
-##    # Generate and print the configuration commands
-##    for vrf, imports in vrf_imports.items():
-##        if imports:
-##            rt_imports = ' '.join(imports)
-##            command = f"set vrf name {vrf} protocols bgp address-family ipv4-unicast route-target vpn import '{rt_imports}'"
-##            print(command)
-
 def generate_configs():
     # Load button states
-    with open(states_file_path) as file:
-        button_states = json.load(file)
+    try:
+        with open(states_file_path, 'r') as file:
+            button_states = json.load(file)
+    except FileNotFoundError:
+        button_states = {}
+        with open(states_file_path, 'w') as file:
+            json.dump(button_states, file) 
 
     # Prepare a dictionary to store VRF import configurations
     vrf_imports = {vrf: set() for vrf, rt in vpn_info}
