@@ -5,7 +5,9 @@ import json
 import os
 import subprocess
 
-config_sh_path = './config_scripts/config.sh'
+script_dir = os.path.dirname(os.path.abspath(__file__))
+config_sh_path = os.path.join(script_dir, "config_scripts/config.sh")
+
 os.chmod(config_sh_path, 0o755)
 
 states_file_path = 'button_states.json'
@@ -47,7 +49,7 @@ def update_vrf_list_route():
 @app.route('/push_config_to_vyos', methods=['POST'])
 def push_config_to_vyos():
     configs = generate_configs()
-    configCommand = "sg vyattacfg -c ./config_scripts/config.sh"
+    configCommand = f"sg vyattacfg -c {config_sh_path}"
     file_path = '/config/scripts/tempConfigFile.py'
 
     try:
