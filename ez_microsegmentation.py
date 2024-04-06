@@ -10,6 +10,10 @@ os.chmod(config_sh_path, 0o755)
 
 states_file_path = 'button_states.json'
 
+apiKey = 'key'
+listenAddress = '0.0.0.0'
+listenPort = 5001
+
 app = Flask(__name__)
 
 @app.route('/')
@@ -91,7 +95,6 @@ def updateVRF_list():
     groups = []
     url = "https://127.0.0.1/retrieve"
     headers = {}
-    apiKey = 'key'
     payload = {'data': '{"op": "showConfig", "path": ["vrf"]}', 'key': apiKey}
 
     try:
@@ -159,4 +162,4 @@ def generate_configs():
 
 if __name__ == '__main__':
     updateVRF_list()
-    app.run(debug=True, port=5001, host='0.0.0.0')
+    app.run(debug=True, port=listenPort, host=listenAddress)
