@@ -7,10 +7,11 @@ To install this on VyOS:
 4. Download PIP using 'wget https://bootstrap.pypa.io/get-pip.py'
 5. Install PIP using 'python3 ./get-pip.py --break-system-packages'
 6. Install Flask using 'python3 -m pip install Flask --break-system-packages'
-7. Enable the VyOS API using 'set service https api keys id key key 'key''. The value for 'key' at the end should be whatever you want your API key to be. You may wish to further secure this using this page: https://docs.vyos.io/en/latest/configuration/service/https.html
-8. Find and update the 'apiKey = 'key'' string towards the top of the script to whatever you made your key.
-9. Run the script using 'python3 ez_microsegmentation.py'
-10. Access the GUI on http://\<IP\>:5001
+7. Enable the VyOS API using `set service https api keys id <name of key ID> key <key value>` (ex. `set service https api keys id mykey key 'key'`). You may wish to further secure this using this page: https://docs.vyos.io/en/latest/configuration/service/https.html
+8. Navigate to the `/config/scripts/vyos_ez_microsegmentation` folder.
+9. Find and update the 'apiKey = 'key'' string towards the top of the ez_microsegmentation.py file to whatever you made your key.
+10. Run the script using 'python3 ez_microsegmentation.py'
+11. Access the GUI on http://\<IP\>:5001
 
 By default, the script will be listening on all interfaces. You can modify that if desired.
 
